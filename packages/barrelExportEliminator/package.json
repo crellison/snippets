@@ -1,0 +1,9 @@
+{
+  "name": "barrel-export-eliminator",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "dag": "workspace:*"
+  }
+}
