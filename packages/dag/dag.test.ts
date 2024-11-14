@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 import { Dag } from './dag';
 
 const makeDagEventTask = (id: string, eventLog: string[]) => () =>
@@ -9,27 +11,36 @@ const makeDagEventTask = (id: string, eventLog: string[]) => () =>
     });
   });
 
-describe(Dag, () => {
-  describe(Dag.prototype.addNode, () => {
-    test('returns expected size', () => {
+describe(Dag.name, () => {
+  describe(Dag.prototype.addNode.name, () => {
+    it('returns expected size', () => {
       const dag = new Dag();
       dag.addNode('a', () => Promise.resolve());
-      expect(dag.size).toBe(1);
+      assert.strictEqual(dag.size, 1);
       dag.addNode('b', () => Promise.resolve());
-      expect(dag.size).toBe(2);
+      assert.strictEqual(dag.size, 2);
       dag.addNode('c', () => Promise.resolve());
-      expect(dag.size).toBe(3);
+      assert.strictEqual(dag.size, 3);
     });
 
-    test('throws if node already exists', () => {
+    it('returns false if node already exists', () => {
       const dag = new Dag();
       dag.addNode('a', () => Promise.resolve());
-      expect(() => dag.addNode('a', () => Promise.resolve())).toThrow();
+      assert.strictEqual(
+        dag.addNode('a', () => Promise.resolve()),
+        false
+      );
     });
   });
 
-  describe(Dag.prototype.addEdge, () => {
-    test('detects cycle', () => {
+  describe(Dag.prototype.addEdge.name, () => {
+    it('fails on path to self', () => {
+      const dag = new Dag();
+      dag.addNode('a', () => Promise.resolve());
+      assert.throws(() => dag.addEdge('a', 'a'));
+    });
+
+    it('detects cycle', () => {
       const dag = new Dag();
       ['a', 'b', 'c', 'd', 'e'].forEach((id) => {
         dag.addNode(id, () => Promise.resolve());
@@ -39,14 +50,14 @@ describe(Dag, () => {
       dag.addEdge('c', 'd');
       dag.addEdge('d', 'e');
 
-      expect(() => dag.addEdge('b', 'a')).toThrow();
-      expect(() => dag.addEdge('e', 'a')).toThrow();
-      expect(() => dag.addEdge('e', 'd')).toThrow();
+      assert.throws(() => dag.addEdge('b', 'a'));
+      assert.throws(() => dag.addEdge('e', 'a'));
+      assert.throws(() => dag.addEdge('e', 'd'));
     });
   });
 
-  describe(Dag.prototype.runTasks, () => {
-    test('small linear chain', async () => {
+  describe(Dag.prototype.runTasks.name, () => {
+    it('small linear chain', async () => {
       /**
        * a -- b -- c
        */
@@ -59,7 +70,7 @@ describe(Dag, () => {
       dag.addEdge('a', 'b');
       dag.addEdge('b', 'c');
       await dag.runTasks();
-      expect(events).toMatchObject([
+      assert.deepStrictEqual(events, [
         'start:a',
         'end:a',
         'start:b',
@@ -69,7 +80,7 @@ describe(Dag, () => {
       ]);
     });
 
-    test('parallel tasks', async () => {
+    it('parallel tasks', async () => {
       /**
        * a -- b
        *   \- c
@@ -88,13 +99,13 @@ describe(Dag, () => {
       const cStart = events.indexOf('start:c');
       const cEnd = events.indexOf('end:c');
 
-      expect(aEnd).toBeLessThan(bStart);
-      expect(aEnd).toBeLessThan(cStart);
-      expect(cStart).toBeLessThan(bEnd);
-      expect(bStart).toBeLessThan(cEnd);
+      assert(aEnd < bStart);
+      assert(aEnd < cStart);
+      assert(cStart < bEnd);
+      assert(bStart < cEnd);
     });
 
-    test('multiple dependencies', async () => {
+    it('multiple dependencies', async () => {
       /**
        * a -\
        * b -- d
@@ -115,7 +126,7 @@ describe(Dag, () => {
       const cEnd = events.indexOf('end:c');
       const dStart = events.indexOf('start:d');
 
-      expect(Math.max(aEnd, bEnd, cEnd)).toBeLessThan(dStart);
+      assert(Math.max(aEnd, bEnd, cEnd) < dStart);
     });
   });
 });

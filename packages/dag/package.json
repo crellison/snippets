@@ -1,0 +1,15 @@
+{
+  "name": "dag",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dag.ts"
+  },
+  "files": [
+    "dag.ts"
+  ],
+  "scripts": {
+    "test": "tsx --test"
+  }
+}

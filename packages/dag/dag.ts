@@ -1,5 +1,3 @@
-import { invariant } from './invariant';
-
 interface Node {
   readonly id: string;
   readonly dependencyIds: string[];
@@ -16,7 +14,7 @@ export class Dag {
 
   public addNode(id: string, task: () => Promise<void>) {
     if (this.nodes[id]) {
-      throw new Error(`Node ${id} already exists`);
+      return false;
     }
     this.nodes[id] = {
       id,
@@ -24,17 +22,17 @@ export class Dag {
       hasOutgoing: false,
       task,
     };
+    return true;
   }
 
   public addEdge(from: string, to: string) {
-    invariant(from !== to, 'Cannot add edge to the same node');
-    invariant(this.nodes[from], `Node ${from} does not exist`);
-    invariant(this.nodes[to], `Node ${to} does not exist`);
+    if (from === to) throw new Error('Cannot add edge to the same node');
+    if (!this.nodes[from]) throw new Error(`Node ${from} does not exist`);
+    if (!this.nodes[to]) throw new Error(`Node ${to} does not exist`);
 
-    invariant(
-      !this.hasInvalidCycle(from, to),
-      `Adding edge from ${from} to ${to} would create a cycle`,
-    );
+    if (this.hasInvalidCycle(from, to)) {
+      throw new Error(`Adding edge from ${from} to ${to} would create a cycle`);
+    }
 
     this.nodes[from].hasOutgoing = true;
     this.nodes[to].dependencyIds.push(from);
@@ -54,7 +52,7 @@ export class Dag {
         addToTaskPromises(depId);
       });
       taskPromises[nodeId] = Promise.all(
-        this.nodes[nodeId].dependencyIds.map((depId) => taskPromises[depId]),
+        this.nodes[nodeId].dependencyIds.map((depId) => taskPromises[depId])
       ).then(async () => {
         await this.nodes[nodeId].task();
       });
@@ -73,7 +71,7 @@ export class Dag {
   private hasInvalidCycle(
     from: string,
     to: string,
-    visited: Set<string> = new Set(),
+    visited: Set<string> = new Set()
   ): boolean {
     if (visited.has(to)) {
       return true;
@@ -85,7 +83,7 @@ export class Dag {
       visited.add(depId);
     }
     return this.nodes[from].dependencyIds.some((depId) =>
-      this.hasInvalidCycle(depId, to, visited),
+      this.hasInvalidCycle(depId, to, visited)
     );
   }
 }

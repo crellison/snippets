@@ -1,0 +1,15 @@
+{
+  "name": "snippets",
+  "version": "1.0.0",
+  "description": "",
+  "author": "hello@cole.ooo",
+  "license": "PRIVATE",
+  "packageManager": "pnpm@9.10.0",
+  "dependencies": {
+    "glob": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2"
+  }
+}
