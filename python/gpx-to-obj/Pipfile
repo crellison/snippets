@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+google = "*"
+gpxpy = "*"
+pyproj = "*"
+typer = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
+
+[scripts]
+gpx-to-obj = "python main.py"
