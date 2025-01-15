@@ -15,4 +15,4 @@ fitparse = "*"
 python_version = "3.13"
 
 [scripts]
-gpx-to-obj = "python main.py"
+gps-to-obj = "python main.py"
